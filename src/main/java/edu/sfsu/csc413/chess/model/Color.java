@@ -16,7 +16,10 @@ public enum Color {
 
     /** The side whose turn it is after this one moves. */
     public Color opposite() {
-        throw new UnsupportedOperationException("M0b: your turn");
+        return switch (this) {
+            case WHITE -> Color.BLACK;
+            case BLACK -> Color.WHITE;
+        };
     }
 
     /**
@@ -24,16 +27,25 @@ public enum Color {
      * White moves up the board (+1), black moves down (-1).
      */
     public int pawnDirection() {
-        throw new UnsupportedOperationException("M0b: your turn");
+        return switch (this) {
+            case WHITE -> 1;
+            case BLACK -> -1;
+        };
     }
 
     /** The rank pawns of this color start on (0-based). */
     public int pawnStartRank() {
-        throw new UnsupportedOperationException("M0b: your turn");
+        return switch (this) {
+            case WHITE -> 1;
+            case BLACK -> 6;
+        };
     }
 
     /** The rank a pawn of this color must reach to promote (0-based). */
     public int promotionRank() {
-        throw new UnsupportedOperationException("M0b: your turn");
+        return switch (this) {
+            case WHITE -> 7;
+            case BLACK -> 0;
+        };
     }
 }
