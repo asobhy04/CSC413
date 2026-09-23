@@ -9,6 +9,9 @@ package edu.sfsu.csc413.chess.model;
  */
 public record Position(int file, int rank) {
 
+    // board is 8x8 (the renderer and BoardTest use this)
+    public static final int BOARD_SIZE = 8;
+
     public Position {
         if (file < 0 || file > 7 || rank < 0 || rank > 7) {
             throw new IllegalArgumentException(
