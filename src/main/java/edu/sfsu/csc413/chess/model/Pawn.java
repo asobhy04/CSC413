@@ -31,7 +31,53 @@ public class Pawn extends Piece {
 
     @Override
     public List<Move> pseudoLegalMoves(Board board, Position from) {
-        throw new UnsupportedOperationException("M2: implement Pawn.pseudoLegalMoves");
+        List<Move> moves = new ArrayList<>();
+        int dir = color().pawnDirection(); // +1 for white, -1 for black
+
+        // move 1 forward (has to be empty)
+        Position ahead = from.offsetOrNull(0, dir);
+        if (ahead != null && board.isEmpty(ahead)) {
+            if (ahead.rank() == color().promotionRank()) {
+                addPromotions(moves, from, ahead, null);
+            } else {
+                moves.add(Move.quiet(from, ahead, this));
+            }
+
+            // move 2 forward on the first move, both squares need to be empty
+            // (this is inside the if so it can't jump over a piece)
+            if (from.rank() == color().pawnStartRank()) {
+                Position twoAhead = from.offsetOrNull(0, dir * 2);
+                if (twoAhead != null && board.isEmpty(twoAhead)) {
+                    moves.add(Move.quiet(from, twoAhead, this));
+                }
+            }
+        }
+
+        // captures: diagonal left and right, only if an enemy is there
+        int[] sides = {-1, 1};
+        for (int side : sides) {
+            Position diag = from.offsetOrNull(side, dir);
+            if (diag == null) {
+                continue;
+            }
+            Piece target = board.pieceAt(diag);
+            if (target != null && target.color() != color()) {
+                if (diag.rank() == color().promotionRank()) {
+                    addPromotions(moves, from, diag, target);
+                } else {
+                    moves.add(Move.capture(from, diag, this, target));
+                }
+            }
+        }
+
+        return moves;
+    }
+
+    // reaching the last rank = 4 moves (queen, rook, bishop, knight)
+    private void addPromotions(List<Move> moves, Position from, Position to, Piece captured) {
+        for (PieceType type : PROMOTION_CHOICES) {
+            moves.add(Move.promotion(from, to, this, captured, type));
+        }
     }
 
     /**
@@ -47,6 +93,9 @@ public class Pawn extends Piece {
      */
     @Override
     public boolean attacks(Board board, Position from, Position target) {
-        throw new UnsupportedOperationException("M2: implement Pawn.attacks");
+        // just checks the shape, doesn't care if something is there or not
+        int fileDiff = Math.abs(target.file() - from.file());
+        int rankDiff = target.rank() - from.rank();
+        return fileDiff == 1 && rankDiff == color().pawnDirection();
     }
 }
