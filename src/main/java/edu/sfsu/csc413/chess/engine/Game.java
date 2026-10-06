@@ -4,6 +4,7 @@ import edu.sfsu.csc413.chess.factory.BoardFactory;
 import edu.sfsu.csc413.chess.model.Board;
 import edu.sfsu.csc413.chess.model.Color;
 import edu.sfsu.csc413.chess.model.Move;
+import edu.sfsu.csc413.chess.model.Position;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +72,11 @@ public class Game {
      * or its callers.
      */
     public List<Move> legalMoves() {
-        throw new UnsupportedOperationException("M3: implement Game.legalMoves");
+        List<Move> moves = new ArrayList<>();
+        for (Position from : board.positionsOf(sideToMove)) {
+            moves.addAll(board.pieceAt(from).pseudoLegalMoves(board, from));
+        }
+        return moves;
     }
 
     /**
@@ -84,7 +89,12 @@ public class Game {
      * with that case.
      */
     public Optional<Move> findLegalMove(String notation) {
-        throw new UnsupportedOperationException("M3: implement Game.findLegalMove");
+        for (Move move : legalMoves()) {
+            if (move.toString().equalsIgnoreCase(notation)) {
+                return Optional.of(move);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -95,7 +105,12 @@ public class Game {
      *         {@link #legalMoves()}
      */
     public void play(Move move) {
-        throw new UnsupportedOperationException("M3: implement Game.play");
+        if (!legalMoves().contains(move)) {
+            throw new IllegalArgumentException("Illegal move: " + move);
+        }
+        board.apply(move);
+        history.add(move);
+        sideToMove = sideToMove.opposite();
     }
 
     /**
