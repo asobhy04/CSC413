@@ -31,6 +31,42 @@ public class Board {
         squares[position.file()][position.rank()] = piece;
     }
 
+    /**
+     * lifts the piece off "from" and sets it down on "to" (whatever was on "to"
+     * is gone). doesn't check anything, Game decides if the move is allowed.
+     * a promotion puts down the new piece instead of the pawn.
+     */
+    public void apply(Move move) {
+        Piece arriving = move.isPromotion()
+                ? createPromoted(move.promotesTo(), move.moved().color())
+                : move.moved();
+        place(move.from(), null);
+        place(move.to(), arriving);
+    }
+
+    /** puts "moved" back on "from" and "captured" (null for a quiet move) back on "to" */
+    public void undo(Move move) {
+        place(move.from(), move.moved());
+        place(move.to(), move.captured());
+    }
+
+    /**
+     * the piece a pawn promotes into. I chose a private switch here instead of
+     * calling PieceFactory.create, because that would make model depend on
+     * factory (arrow pointing the wrong way). the cost: this duplicates four
+     * cases from PieceFactory, and a new PieceType won't break the build here,
+     * it falls into the throw instead.
+     */
+    private static Piece createPromoted(PieceType type, Color color) {
+        return switch (type) {
+            case QUEEN -> new Queen(color);
+            case ROOK -> new Rook(color);
+            case BISHOP -> new Bishop(color);
+            case KNIGHT -> new Knight(color);
+            default -> throw new IllegalArgumentException("Cannot promote to " + type);
+        };
+    }
+
     /** every square that has a piece of the given color */
     public List<Position> positionsOf(Color color) {
         List<Position> result = new ArrayList<>();
