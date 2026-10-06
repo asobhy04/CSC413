@@ -120,6 +120,12 @@ public class Game {
      * was captured. In Week 10 this becomes the Command pattern proper.
      */
     public Optional<Move> undoLastMove() {
-        throw new UnsupportedOperationException("M3: implement Game.undoLastMove");
+        if (history.isEmpty()) {
+            return Optional.empty();
+        }
+        Move last = history.remove(history.size() - 1);
+        board.undo(last);
+        sideToMove = sideToMove.opposite();
+        return Optional.of(last);
     }
 }
