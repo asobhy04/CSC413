@@ -41,7 +41,7 @@ public final class MoveGenerator {
      * when it tightens.
      */
     public static List<Move> legalMoves(Board board, Color color) {
-        throw new UnsupportedOperationException("M4: implement MoveGenerator.legalMoves");
+        return pseudoLegalMoves(board, color);
     }
 
     /**
@@ -54,6 +54,11 @@ public final class MoveGenerator {
      * <p>Package-private on purpose. Only {@code Game} and this class's tests,
      * both in {@code engine}, may call it. A view that wants the moves asks
      * {@code Game}.
+     */
+
+    /** 
+     * Used claude to help debug
+     * moves.addAll(board.pieceAt(from).pseudoLegalMoves(board, from));
      */
     static List<Move> pseudoLegalMoves(Board board, Color color) {
         List<Move> moves = new ArrayList<>();
