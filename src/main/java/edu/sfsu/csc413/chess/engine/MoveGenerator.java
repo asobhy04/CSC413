@@ -35,13 +35,22 @@ public final class MoveGenerator {
     /**
      * Every move {@code color} may legally play in the given position.
      *
-     * <p>At M4 this is {@link #pseudoLegalMoves} unfiltered: the right colour
-     * and the right geometry. M5 adds the one global rule, king safety, here
-     * and only here. {@code Game.legalMoves()} calls this and does not change
-     * when it tightens.
+     * <p>M5: this is {@link #pseudoLegalMoves} with the king safety filter.
+     * each candidate gets played on the board, we check if our own king is
+     * attacked, then undo it. so the board is back the way it was when this
+     * returns. {@code Game.legalMoves()} calls this and didn't have to change.
      */
     public static List<Move> legalMoves(Board board, Color color) {
-        return pseudoLegalMoves(board, color);
+        List<Move> legal = new ArrayList<>();
+        for (Move move : pseudoLegalMoves(board, color)) {
+            board.apply(move);
+            boolean leavesKingInCheck = isInCheck(board, color);
+            board.undo(move); // undo before trying the next one
+            if (!leavesKingInCheck) {
+                legal.add(move);
+            }
+        }
+        return legal;
     }
 
     /**
@@ -73,7 +82,11 @@ public final class MoveGenerator {
      * if color has no king on the board (happens in the tests) it's not in check.
      */
     public static boolean isInCheck(Board board, Color color) {
-        throw new UnsupportedOperationException("M5: implement MoveGenerator.isInCheck");
+        Position king = board.kingPosition(color);
+        if (king == null) {
+            return false;
+        }
+        return isAttacked(board, king, color.opposite());
     }
 
     /**
@@ -82,6 +95,12 @@ public final class MoveGenerator {
      * (a pawn moves forward but only attacks diagonally).
      */
     public static boolean isAttacked(Board board, Position target, Color attacker) {
-        throw new UnsupportedOperationException("M5: implement MoveGenerator.isAttacked");
+        // ask each piece, don't check what kind it is (Pawn overrides attacks)
+        for (Position from : board.positionsOf(attacker)) {
+            if (board.pieceAt(from).attacks(board, from, target)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
