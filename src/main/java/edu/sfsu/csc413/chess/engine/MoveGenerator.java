@@ -56,7 +56,7 @@ public final class MoveGenerator {
      * {@code Game}.
      */
 
-    /** 
+    /**
      * Used claude to help debug
      * moves.addAll(board.pieceAt(from).pseudoLegalMoves(board, from));
      */
@@ -66,5 +66,22 @@ public final class MoveGenerator {
             moves.addAll(board.pieceAt(from).pseudoLegalMoves(board, from));
         }
         return moves;
+    }
+
+    /**
+     * true if color's king is being attacked by the other color.
+     * if color has no king on the board (happens in the tests) it's not in check.
+     */
+    public static boolean isInCheck(Board board, Color color) {
+        throw new UnsupportedOperationException("M5: implement MoveGenerator.isInCheck");
+    }
+
+    /**
+     * true if any piece of the attacker color attacks the target square.
+     * "attacks" not "can move there", these are different for pawns
+     * (a pawn moves forward but only attacks diagonally).
+     */
+    public static boolean isAttacked(Board board, Position target, Color attacker) {
+        throw new UnsupportedOperationException("M5: implement MoveGenerator.isAttacked");
     }
 }

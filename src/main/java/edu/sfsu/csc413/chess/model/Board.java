@@ -82,6 +82,20 @@ public class Board {
     }
 
     /**
+     * the square the king of this color is on, or null if there's no king.
+     * a real game always has both kings but the tests set up boards without
+     * them, so null is a normal answer here and not an error.
+     */
+    public Position kingPosition(Color color) {
+        for (Position position : positionsOf(color)) {
+            if (pieceAt(position).type() == PieceType.KING) {
+                return position;
+            }
+        }
+        return null;
+    }
+
+    /**
      * FEN placement field, e.g. "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR".
      * Goes from rank 8 down to rank 1, and empty squares in a row get
      * counted into one digit.
