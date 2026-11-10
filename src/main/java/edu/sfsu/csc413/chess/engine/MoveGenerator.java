@@ -90,6 +90,22 @@ public final class MoveGenerator {
     }
 
     /**
+     * How the game stands for {@code sideToMove} in the given position.
+     *
+     * <p>M6: two questions from M5 decide it. Is that side in check, and does
+     * it have a legal move? In check with no move is checkmate; not in check
+     * with no move is stalemate; otherwise the game goes on.
+     */
+    public static GameStatus status(Board board, Color sideToMove) {
+        boolean inCheck = isInCheck(board, sideToMove);
+        boolean hasMove = !legalMoves(board, sideToMove).isEmpty();
+        if (hasMove) {
+            return inCheck ? GameStatus.CHECK : GameStatus.IN_PROGRESS;
+        }
+        return inCheck ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
+    }
+
+    /**
      * true if any piece of the attacker color attacks the target square.
      * "attacks" not "can move there", these are different for pawns
      * (a pawn moves forward but only attacks diagonally).

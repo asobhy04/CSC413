@@ -78,6 +78,25 @@ public class Game {
     }
 
     /**
+     * How the game stands for the side to move: in progress, check,
+     * checkmate, or stalemate.
+     *
+     * <p>M6: like {@link #legalMoves()}, this asks {@link MoveGenerator}, so
+     * views and controllers only ever talk to {@code Game}.
+     */
+    public GameStatus status() {
+        return MoveGenerator.status(board, sideToMove);
+    }
+
+    /**
+     * True when the game has ended by checkmate or stalemate.
+     * {@link GameStatus} knows which statuses end the game.
+     */
+    public boolean isGameOver() {
+        return status().isGameOver();
+    }
+
+    /**
      * Finds the legal move matching notation such as {@code "e2e4"} or
      * {@code "e7e8q"}, if there is one.
      *
