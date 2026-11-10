@@ -1,6 +1,11 @@
 package edu.sfsu.csc413.chess.view;
 
 import edu.sfsu.csc413.chess.engine.Game;
+import edu.sfsu.csc413.chess.engine.GameStatus;
+import edu.sfsu.csc413.chess.model.Move;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Connects the player's decisions to the game: carry out what was asked, then
@@ -20,6 +25,9 @@ public class GameController {
     private final Game game;
     private final BoardView view;
 
+    /** The only state the controller keeps: whether the player asked to stop. */
+    private boolean quit;
+
     public GameController(Game game, BoardView view) {
         this.game = game;
         this.view = view;
@@ -35,7 +43,9 @@ public class GameController {
      * view with {@link BoardView#start}.
      */
     public void start() {
-        throw new UnsupportedOperationException("M6: implement GameController.start");
+        view.showMessage("Welcome to chess. " + game.sideToMove() + " moves first.");
+        view.render(game);
+        view.start(this);
     }
 
     /**
@@ -46,7 +56,9 @@ public class GameController {
      * {@code start}; an event-driven view never calls it.
      */
     public void runLoop() {
-        throw new UnsupportedOperationException("M6: implement GameController.runLoop");
+        while (!quit && !game.isGameOver()) {
+            handle(view.nextAction(game));
+        }
     }
 
     /**
@@ -57,6 +69,63 @@ public class GameController {
      * each of the four actions does and what the player is told.
      */
     public void handle(PlayerAction action) {
-        throw new UnsupportedOperationException("M6: implement GameController.handle");
+        // No default: PlayerAction is sealed, so the compiler checks all four.
+        switch (action) {
+            case PlayerAction.Move move -> playMove(move.notation());
+            case PlayerAction.Undo undo -> {
+                if (game.undoLastMove().isEmpty()) {
+                    view.showMessage("Nothing to undo.");
+                }
+            }
+            case PlayerAction.ShowMoves showMoves -> showLegalMoves();
+            case PlayerAction.Quit q -> {
+                quit = true;
+                view.showMessage("Goodbye.");
+                view.close();
+                return; // no redraw after quitting
+            }
+        }
+
+        view.render(game);
+        if (game.isGameOver()) {
+            announceResult();
+            view.close();
+        }
+    }
+
+    /**
+     * Plays the legal move with this notation, or reports that there is none.
+     * A four-character move that matches nothing may be a promotion without
+     * its letter, so the view is asked which piece and we try once more.
+     */
+    private void playMove(String notation) {
+        Optional<Move> move = game.findLegalMove(notation);
+        if (move.isEmpty() && notation.length() == 4) {
+            char letter = Character.toLowerCase(view.promotionChoice(game).symbol());
+            move = game.findLegalMove(notation + letter);
+        }
+        if (move.isPresent()) {
+            game.play(move.get());
+        } else {
+            view.showMessage("Not a legal move: '" + notation + "'.");
+        }
+    }
+
+    /** Tells the player every legal move, sorted. Changes nothing. */
+    private void showLegalMoves() {
+        List<String> moves = game.legalMoves().stream()
+                .map(Move::toString)
+                .sorted()
+                .toList();
+        view.showMessage(moves.size() + " legal moves: " + String.join(" ", moves));
+    }
+
+    /** The side to move is the side that has no move, so a mate means the other side won. */
+    private void announceResult() {
+        if (game.status() == GameStatus.CHECKMATE) {
+            view.showMessage("Checkmate. " + game.sideToMove().opposite() + " wins.");
+        } else {
+            view.showMessage("Stalemate. The game is a draw.");
+        }
     }
 }

@@ -1,29 +1,26 @@
 package edu.sfsu.csc413.chess;
 
 import edu.sfsu.csc413.chess.engine.Game;
-import edu.sfsu.csc413.chess.view.PieceGlyphs;
-import edu.sfsu.csc413.chess.view.TextBoardRenderer;
-
-import java.util.List;
+import edu.sfsu.csc413.chess.view.BoardView;
+import edu.sfsu.csc413.chess.view.ConsoleView;
+import edu.sfsu.csc413.chess.view.EmojiView;
+import edu.sfsu.csc413.chess.view.GameController;
 
 /**
- * Entry point. Plays e2e4 and e7e5 through Game (M3), then undoes one,
- * printing the board each time. Main only talks to Game.
+ * Entry point. Builds a {@link Game}, a {@link BoardView}, and a
+ * {@link GameController} that joins them, then starts the game.
+ *
+ * <p>Pass {@code emoji} on the command line for {@link EmojiView}; anything
+ * else (or nothing) gives {@link ConsoleView}.
  */
 public final class Main {
 
     public static void main(String[] args) {
         Game game = new Game();
-        TextBoardRenderer renderer = new TextBoardRenderer(PieceGlyphs.LETTERS);
-        System.out.println(renderer.render(game.board()));
-
-        for (String notation : List.of("e2e4", "e7e5")) {
-            game.play(game.findLegalMove(notation).orElseThrow());
-        }
-        System.out.println(renderer.render(game.board()));
-
-        game.undoLastMove();
-        System.out.println(renderer.render(game.board()));
+        BoardView view = args.length > 0 && args[0].equalsIgnoreCase("emoji")
+                ? new EmojiView()
+                : new ConsoleView();
+        new GameController(game, view).start();
     }
 
     private Main() {
