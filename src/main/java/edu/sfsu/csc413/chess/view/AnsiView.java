@@ -15,7 +15,8 @@ import java.util.Scanner;
 /**
  * A terminal board in ANSI colour, always drawn from the side to move.
  *
- * <p>Squares are coloured backgrounds three columns wide; pieces are the same
+ * <p>The board sits inside a ruled box (the box-drawing grid from
+ * {@code BorderedView}). Squares are coloured backgrounds three columns wide; pieces are the same
  * filled figure for both sides, told apart by colour (white or black) so that
  * each is readable on light and dark squares. The last move is tinted, and the
  * king of the side to move turns red when {@link Game#status()} says check.
@@ -43,6 +44,15 @@ public class AnsiView implements BoardView {
     private static final String MESSAGE = ESC + "33m";
     private static final String ALERT = ESC + "1;31m";
     private static final String GOOD = ESC + "1;32m";
+
+    // The ruled box, from BorderedView. Each "───" is one three-column cell,
+    // so the grid stays readable even where colour is not shown.
+    private static final String GRID = fg(128, 128, 128);
+    private static final String TOP    = "┌───┬───┬───┬───┬───┬───┬───┬───┐";
+    private static final String MIDDLE = "├───┼───┼───┼───┼───┼───┼───┼───┤";
+    private static final String BOTTOM = "└───┴───┴───┴───┴───┴───┴───┴───┘";
+    /** The width of a rank label (" 8 "), so the box lines up beside it. */
+    private static final String INDENT = "   ";
 
     private final PrintStream out;
     private final Scanner in;
@@ -109,11 +119,13 @@ public class AnsiView implements BoardView {
         StringBuilder text = new StringBuilder();
         String files = fileLegend(flipped);
         text.append(files).append('\n');
+        text.append(INDENT).append(GRID).append(TOP).append(RESET).append('\n');
 
         for (int row = 0; row < Position.BOARD_SIZE; row++) {
             // Screen row 0 is the top line. Ranks count up; rows count down.
             int rank = flipped ? row : Position.BOARD_SIZE - 1 - row;
-            text.append(LABEL).append(' ').append(rank + 1).append(' ').append(RESET);
+            text.append(LABEL).append(' ').append(rank + 1).append(' ').append(RESET)
+                    .append(GRID).append('│').append(RESET);
 
             for (int column = 0; column < Position.BOARD_SIZE; column++) {
                 int file = flipped ? Position.BOARD_SIZE - 1 - column : column;
@@ -137,19 +149,23 @@ public class AnsiView implements BoardView {
                     text.append(piece.color() == Color.WHITE ? WHITE_FG : BLACK_FG)
                             .append(' ').append(figure(piece.type())).append(' ');
                 }
-                text.append(RESET);
+                text.append(RESET).append(GRID).append('│').append(RESET);
             }
             text.append(LABEL).append(' ').append(rank + 1).append(RESET).append('\n');
+
+            String rule = row < Position.BOARD_SIZE - 1 ? MIDDLE : BOTTOM;
+            text.append(INDENT).append(GRID).append(rule).append(RESET).append('\n');
         }
         text.append(files).append('\n');
         return text.toString();
     }
 
+    /** The file letters, each centred over its three-column cell. */
     private static String fileLegend(boolean flipped) {
-        StringBuilder legend = new StringBuilder(LABEL).append("   ");
+        StringBuilder legend = new StringBuilder(LABEL).append(INDENT);
         for (int column = 0; column < Position.BOARD_SIZE; column++) {
             int file = flipped ? Position.BOARD_SIZE - 1 - column : column;
-            legend.append(' ').append((char) ('a' + file)).append(' ');
+            legend.append("  ").append((char) ('a' + file)).append(' ');
         }
         return legend.append(RESET).toString();
     }

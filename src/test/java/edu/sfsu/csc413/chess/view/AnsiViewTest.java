@@ -49,13 +49,15 @@ class AnsiViewTest {
 
         String white = strip(view.board(game));
         String[] whiteLines = white.split("\n");
-        assertEquals("    a  b  c  d  e  f  g  h ", whiteLines[0]);
-        assertTrue(whiteLines[1].startsWith(" 8 "), whiteLines[1]);
+        assertEquals("     a   b   c   d   e   f   g   h ", whiteLines[0]);
+        assertEquals("   ┌───┬───┬───┬───┬───┬───┬───┬───┐", whiteLines[1]);
+        assertTrue(whiteLines[2].startsWith(" 8 │ ♜ │"), whiteLines[2]);
+        assertEquals("   └───┴───┴───┴───┴───┴───┴───┴───┘", whiteLines[17]);
 
         new GameController(game, view).handle(new PlayerAction.Move("e2e4"));
         String[] blackLines = strip(view.board(game)).split("\n");
-        assertEquals("    h  g  f  e  d  c  b  a ", blackLines[0]);
-        assertTrue(blackLines[1].startsWith(" 1 "), blackLines[1]);
+        assertEquals("     h   g   f   e   d   c   b   a ", blackLines[0]);
+        assertTrue(blackLines[2].startsWith(" 1 │ ♜ │"), blackLines[2]);
     }
 
     @Test
